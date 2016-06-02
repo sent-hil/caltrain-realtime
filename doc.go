@@ -12,6 +12,6 @@
 //   )
 //
 //   func main() {
-//     timings, err := caltrain.GetRealTimings(caltrain.SanFrancisco, caltrail.SouthBound)
+//     timings, err := caltrain.GetRealTimings(caltrain.SanFrancisco, caltrain.SouthBound)
 //   }
 package caltrain

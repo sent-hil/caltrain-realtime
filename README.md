@@ -5,7 +5,7 @@ directions. It does so by scraping the Caltrain mobile page.
 
 Please don't abuse this api.
 
-See https://godoc.org/github.com/sent-hil/caltrail-realtime for more api.
+See https://godoc.org/github.com/sent-hil/caltrain-realtime for more api.
 
 ## Install
 
@@ -21,6 +21,6 @@ import (
 )
 
 func main() {
-  timings, err := caltrain.GetRealTimings(caltrain.SanFrancisco, caltrail.SouthBound)
+  timings, err := caltrain.GetRealTimings(caltrain.SanFrancisco, caltrain.SouthBound)
 }
 ```
