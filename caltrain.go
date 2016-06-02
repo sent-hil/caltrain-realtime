@@ -73,7 +73,7 @@ func GetRealTimings(s Station, d Direction) (timings []time.Duration, err error)
 
 	// Caltrain realtime page return data in a difficult to parse format:
 	//
-	//		<tr class="ipf-st-ip-trains-table-dir-tr">
+	//    <tr class="ipf-st-ip-trains-table-dir-tr">
 	//       <th class="ipf-st-ip-trains-table-dir-td1">
 	//          <div>SOUTHBOUND</div>
 	//       </th>
@@ -97,10 +97,9 @@ func GetRealTimings(s Station, d Direction) (timings []time.Duration, err error)
 	// where you'll need to assume positions of timings match the headers.
 	//
 	// There are 3 cases:
-	//		* Only 1 direction exists. Example: SanFrancisco only has SouthBound.
+	//    * Only 1 direction exists. Example: SanFrancisco only has SouthBound.
 	//    * Both direction exists.
 	//    * No direction exists. Since Caltrain isn't 24/7 this is likely afterhours.
-	//
 	//
 	// TODO: how to deal where SouthBound is empty, but NorthBound isn't?
 	// TODO: incorporate alerts
