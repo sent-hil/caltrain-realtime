@@ -54,7 +54,8 @@ const (
 	Gilroy                Station = "gilroy"
 
 	timingSuffix      = " min."
-	timingCSSSelector = ".ipf-st-ip-trains-subtable-td-arrivaltime"
+	directionSelector = ".ipf-st-ip-trains-subtable"
+	timingSelector    = ".ipf-st-ip-trains-subtable-td-arrivaltime"
 )
 
 // GetRealTimings returns duration of latest trains arriving at the specified
@@ -73,53 +74,35 @@ func GetRealTimings(s Station, d Direction) (timings []time.Duration, err error)
 
 	// Caltrain realtime page return data in a difficult to parse format:
 	//
-	//    <tr class="ipf-st-ip-trains-table-dir-tr">
-	//       <th class="ipf-st-ip-trains-table-dir-td1">
-	//          <div>SOUTHBOUND</div>
-	//       </th>
-	//       <th class="ipf-st-ip-trains-table-dir-td1">
-	//          <div>NORTHBOUND</div>
-	//       </th>
-	//    </tr>
-	//    <tr class="ipf-st-ip-trains-table-trains-tr">
-	//       <td>
-	//          <table class="ipf-st-ip-trains-subtable">
-	//             <tr class="ipf-st-ip-trains-subtable-tr">
-	//                ...
-	//                <td class="ipf-st-ip-trains-subtable-td-arrivaltime">30 min.</td>
-	//             </tr>
-	//          </table>
+	//    <table class="ipf-st-ip-trains-subtable">
+	//       <tr class="ipf-st-ip-trains-subtable-tr">
 	//          ...
-	//       </td>
-	//     </tr>
+	//          <td class="ipf-st-ip-trains-subtable-td-arrivaltime">30 min.</td>
+	//       </tr>
+	//    </table>
+	//    <table class="ipf-st-ip-trains-subtable">
+	//       <tr class="ipf-st-ip-trains-subtable-tr">
+	//          ...
+	//          <td class="ipf-st-ip-trains-subtable-td-arrivaltime">10 min.</td>
+	//       </tr>
+	//    </table>
 	//
-	// Note how headers are in a different row than timings. This poses a problem
-	// where you'll need to assume positions of timings match the headers.
+	// Since the headers are in a different row than the data, we assume the first
+	// table contains SouthBound timings and the last one contains NorthBound.
 	//
-	// There are 3 cases:
-	//    * Only 1 direction exists. Example: SanFrancisco only has SouthBound.
-	//    * Both direction exists.
-	//    * No direction exists. Since Caltrain isn't 24/7 this is likely afterhours.
-	//
-	// TODO: how to deal where SouthBound is empty, but NorthBound isn't?
 	// TODO: incorporate alerts
-	var (
-		srt = 0
-		end = 2
-	)
 
-	// if NorthBound, ignore the 1st three timings and return the last 3.
+	var index = 0
 	if d == NorthBound {
-		srt = 3
-		end = 5
+		index = 1
 	}
 
-	doc.Find(timingCSSSelector).Each(func(i int, s *goquery.Selection) {
-		if i >= srt && i <= end {
-			if min, err := parseStrIntoTime(s.Text()); err == nil {
+	doc.Find(directionSelector).Eq(index).Each(func(i int, s *goquery.Selection) {
+		s.Find(timingSelector).Each(func(j int, t *goquery.Selection) {
+			if min, err := parseStrIntoTime(t.Text()); err == nil {
 				timings = append(timings, min)
 			}
-		}
+		})
 	})
 
 	return timings, nil

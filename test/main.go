@@ -25,6 +25,10 @@ func main() {
 
 	assert(caltrain.MountainView, caltrain.SouthBound, 3)
 	assert(caltrain.MountainView, caltrain.NorthBound, 3)
+
+	// Possibly SouthBound has only 2 train.
+	assert(caltrain.Tamien, caltrain.SouthBound, 2)
+	assert(caltrain.Tamien, caltrain.NorthBound, 3)
 }
 
 func assert(s caltrain.Station, d caltrain.Direction, l int) {
@@ -33,11 +37,11 @@ func assert(s caltrain.Station, d caltrain.Direction, l int) {
 		log.Fatal(err)
 	}
 	if len(timings) != l {
-		log.Fatalf("Expected '%d' durations for '%s'->'%s'", l, s, d)
+		log.Fatalf("Expected '%d' durations for '%s'->'%d', was '%d'.", l, s, d, len(timings))
 	}
 	if len(timings) > 0 {
-		log.Printf("Passed '%s'->'%d': '%v'", s, d, timings)
+		log.Printf("Passed '%s'->'%d': '%v'.", s, d, timings)
 	} else {
-		log.Printf("Passed '%s'->'%d'", s, d)
+		log.Printf("Passed '%s'->'%d': no trains.", s, d)
 	}
 }
