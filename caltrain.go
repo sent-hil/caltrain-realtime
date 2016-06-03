@@ -13,12 +13,9 @@ type Station string
 type Direction int
 
 const (
-	// BaseURL is the common url between station realtime web pages.
-	BaseURL = "http://www.caltrain.com/schedules/realtime/stations/%sstation-mobile.html"
-
 	// direction of trains
-	SouthBound Direction = iota
-	NorthBound Direction = iota
+	SouthBound Direction = 0
+	NorthBound Direction = 1
 
 	// list of train strations as of June 1, 2016
 	SanFrancisco          Station = "sanfrancisco"
@@ -53,7 +50,11 @@ const (
 	SanMartin             Station = "sanmartin"
 	Gilroy                Station = "gilroy"
 
-	timingSuffix      = " min."
+	// baseURL is the common url between station realtime web pages.
+	baseURL = "http://www.caltrain.com/schedules/realtime/stations/%sstation-mobile.html"
+
+	timingSuffix = " min."
+
 	directionSelector = ".ipf-st-ip-trains-subtable"
 	timingSelector    = ".ipf-st-ip-trains-subtable-td-arrivaltime"
 )
@@ -66,13 +67,15 @@ const (
 // stations.
 //
 // See http://www.caltrain.com/schedules.html if you want scheduled timetables.
+//
+// TODO: incorporate alerts which are embedded in the page.
 func GetRealTimings(s Station, d Direction) (timings []time.Duration, err error) {
-	doc, err := goquery.NewDocument(fmt.Sprintf(BaseURL, s))
+	doc, err := goquery.NewDocument(fmt.Sprintf(baseURL, s))
 	if err != nil {
 		return nil, err
 	}
 
-	// Caltrain realtime page return data in a difficult to parse format:
+	// Caltrain realtime page has the data we want in tables:
 	//
 	//    <table class="ipf-st-ip-trains-subtable">
 	//       <tr class="ipf-st-ip-trains-subtable-tr">
@@ -88,19 +91,18 @@ func GetRealTimings(s Station, d Direction) (timings []time.Duration, err error)
 	//    </table>
 	//
 	// Since the headers are in a different row than the data, we assume the first
-	// table contains SouthBound timings and the last one contains NorthBound.
+	// table with class "ipf-st-ip-trains-subtable" contains SouthBound timings
+	// and the last one contains NorthBound.
 	//
-	// TODO: incorporate alerts
+	i := int(d)
 
-	var index = 0
-	if d == NorthBound {
-		index = 1
-	}
+	// get the approriate (0 or 1) table
+	doc.Find(directionSelector).Eq(i).Each(func(_ int, s1 *goquery.Selection) {
 
-	doc.Find(directionSelector).Eq(index).Each(func(i int, s *goquery.Selection) {
-		s.Find(timingSelector).Each(func(j int, t *goquery.Selection) {
-			if min, err := parseStrIntoTime(t.Text()); err == nil {
-				timings = append(timings, min)
+		// iterate through arrival timings
+		s1.Find(timingSelector).Each(func(_ int, s2 *goquery.Selection) {
+			if t, err := parseStrIntoTime(s2.Text()); err == nil {
+				timings = append(timings, t)
 			}
 		})
 	})
