@@ -34,10 +34,15 @@ func main() {
 func assert(s caltrain.Station, d caltrain.Direction, l int) {
 	timings, err := caltrain.GetRealTimings(s, d)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("ERROR: %s", err)
+		return
 	}
 	if len(timings) != l {
-		log.Fatalf("Expected '%d' durations for '%s'->'%d', was '%d'.", l, s, d, len(timings))
+		log.Printf(
+			"ERROR: Expected '%d' durations for '%s'->'%d', was '%d': '%v'",
+			l, s, d, len(timings), timings,
+		)
+		return
 	}
 	if len(timings) > 0 {
 		log.Printf("Passed '%s'->'%d': '%v'.", s, d, timings)
